@@ -1,7 +1,7 @@
-#ifndef SiPixelPhase1Clusters_h 
-#define SiPixelPhase1Clusters_h 
+#ifndef SiPixelPhase1Clusters_h
+#define SiPixelPhase1Clusters_h
 // -*- C++ -*-
-// 
+//
 // Package:     SiPixelPhase1Clusters
 // Class  :     SiPixelPhase1Clusters
 //
@@ -15,6 +15,7 @@ class SiPixelPhase1Clusters : public SiPixelPhase1Base {
   enum {
     CHARGE,
     SIZE,
+
     NCLUSTERS,
     NCLUSTERSINCLUSIVE,
     EVENTRATE,
@@ -24,7 +25,7 @@ class SiPixelPhase1Clusters : public SiPixelPhase1Base {
     POSITION_YZ,
     SIZE_VS_ETA,
     READOUT_CHARGE,
-    READOUT_NCLUSTERS
+    READOUT_NCLUSTERS,
   };
 
   public:

@@ -9,122 +9,131 @@
 #include "DQM/SiPixelPhase1TrackEfficiency/interface/SiPixelPhase1TrackEfficiency.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 
-#include "FWCore/Framework/interface/ESHandle.h"
-#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
-#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
-#include "Geometry/CommonTopologies/interface/PixelTopology.h"
 #include "DataFormats/SiPixelDetId/interface/PixelSubdetector.h"
 #include "DataFormats/SiStripDetId/interface/StripSubdetector.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackerRecHit2D/interface/SiPixelRecHit.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "Geometry/CommonTopologies/interface/PixelTopology.h"
+#include "Geometry/Records/interface/TrackerDigiGeometryRecord.h"
+#include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
+#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 
 #include "TrackingTools/TrackFitters/interface/TrajectoryStateCombiner.h"
 
+#include <iostream>
 
-SiPixelPhase1TrackEfficiency::SiPixelPhase1TrackEfficiency(const edm::ParameterSet& iConfig) :
-  SiPixelPhase1Base(iConfig) 
+SiPixelPhase1TrackEfficiency::SiPixelPhase1TrackEfficiency( const edm::ParameterSet& iConfig ) :
+   SiPixelPhase1Base( iConfig )
 {
-  trackAssociationToken_ = consumes<TrajTrackAssociationCollection>(iConfig.getParameter<edm::InputTag>("trajectories"));
-  vtxToken_ = consumes<reco::VertexCollection>(iConfig.getParameter<edm::InputTag>("primaryvertices"));
+   trackAssociationToken_ = consumes<TrajTrackAssociationCollection>( iConfig.getParameter<edm::InputTag>( "trajectories" ) );
+   vtxToken_              = consumes<reco::VertexCollection>( iConfig.getParameter<edm::InputTag>( "primaryvertices" ) );
 }
 
-void SiPixelPhase1TrackEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void
+SiPixelPhase1TrackEfficiency::analyze( const edm::Event& iEvent, const edm::EventSetup& iSetup )
+{
 
-  // get geometry
-  edm::ESHandle<TrackerGeometry> tracker;
-  iSetup.get<TrackerDigiGeometryRecord>().get(tracker);
-  assert(tracker.isValid());
+   // get geometry
+   edm::ESHandle<TrackerGeometry> tracker;
+   iSetup.get<TrackerDigiGeometryRecord>().get( tracker );
+   assert( tracker.isValid() );
 
-  // get primary vertex
-  edm::Handle<reco::VertexCollection> vertices;
-  iEvent.getByToken( vtxToken_, vertices);
+   // get primary vertex
+   edm::Handle<reco::VertexCollection> vertices;
+   iEvent.getByToken( vtxToken_, vertices );
 
-  if (!vertices.isValid()) return;
-  histo[VERTICES].fill(vertices->size(),DetId(0),&iEvent);
-  if (vertices->size() == 0) return;
+   if( !vertices.isValid() ){ return; }
+   histo[VERTICES].fill( vertices->size(), DetId( 0 ), &iEvent );
 
-  // should be used for weird cuts
-  //const auto primaryVertex = vertices->at(0); 
+   // Skipping events with no primary vertices
+   if( vertices->size() == 0 ){ return; }
 
-  // get the map
-  edm::Handle<TrajTrackAssociationCollection> ttac;
-  iEvent.getByToken( trackAssociationToken_, ttac);
+   for( const auto& vertex : *vertices ){
+      histo[CHISQ].fill( vertex.chi2(), DetId(0), &iEvent );
+   }
 
-  for (auto& item : *ttac) {
-    auto trajectory_ref = item.key;
-    reco::TrackRef track_ref = item.val;
+   // should be used for weird cuts
+   // const auto primaryVertex = vertices->at(0);
 
-    bool isBpixtrack = false, isFpixtrack = false;
-    int nStripHits = 0;
+   // get the map
+   edm::Handle<TrajTrackAssociationCollection> ttac;
+   iEvent.getByToken( trackAssociationToken_, ttac );
 
-    // first, look at the full track to see whether it is good
-    for (auto& measurement : trajectory_ref->measurements()) {
-      // check if things are all valid
-      if (!measurement.updatedState().isValid()) continue;
-      auto hit = measurement.recHit();
-      if (!hit->isValid()) continue;
+   for( auto& item : *ttac ){
+      auto trajectory_ref      = item.key;
+      reco::TrackRef track_ref = item.val;
 
-      DetId id = hit->geographicalId();
-      uint32_t subdetid = (id.subdetId());
+      bool isBpixtrack = false, isFpixtrack = false;
+      int nStripHits = 0;
 
-      // count strip hits
-      if(subdetid==StripSubdetector::TIB) nStripHits++;
-      if(subdetid==StripSubdetector::TOB) nStripHits++;
-      if(subdetid==StripSubdetector::TID) nStripHits++;
-      if(subdetid==StripSubdetector::TEC) nStripHits++;
+      // first, look at the full track to see whether it is good
+      for( auto& measurement : trajectory_ref->measurements() ){
+         // check if things are all valid
+         if( !measurement.updatedState().isValid() ){ continue;}
+         auto hit = measurement.recHit();
+         if( !hit->isValid() ){ continue;}
 
-      // check that we are in the pixel
-      if (subdetid == PixelSubdetector::PixelBarrel) isBpixtrack = true;
-      if (subdetid == PixelSubdetector::PixelEndcap) isFpixtrack = true;
-    }
+         DetId id          = hit->geographicalId();
+         uint32_t subdetid = ( id.subdetId() );
 
-    if (!isBpixtrack && !isFpixtrack) continue;
+         // count strip hits
+         if( subdetid == StripSubdetector::TIB ){ nStripHits++;}
+         if( subdetid == StripSubdetector::TOB ){ nStripHits++;}
+         if( subdetid == StripSubdetector::TID ){ nStripHits++;}
+         if( subdetid == StripSubdetector::TEC ){ nStripHits++;}
 
-    // then, look at each hit
-    for (auto& measurement : trajectory_ref->measurements()) {
-      if (!measurement.updatedState().isValid()) continue;
-      auto hit = measurement.recHit();
-
-      DetId id = hit->geographicalId();
-      uint32_t subdetid = (id.subdetId());
-      if (   subdetid != PixelSubdetector::PixelBarrel 
-          && subdetid != PixelSubdetector::PixelEndcap) continue;
-
-      bool isHitValid   = hit->getType()==TrackingRecHit::valid;
-      bool isHitMissing = hit->getType()==TrackingRecHit::missing;
-
-      const SiPixelRecHit* pixhit = dynamic_cast<const SiPixelRecHit*>(hit->hit());
-      const PixelGeomDetUnit* geomdetunit = dynamic_cast<const PixelGeomDetUnit*> ( tracker->idToDet(id) );
-      const PixelTopology& topol = geomdetunit->specificTopology();
-      LocalPoint lp;
-      if (pixhit) {
-        lp = pixhit->localPosition();
-      } else {
-        TrajectoryStateCombiner tsc;
-        TrajectoryStateOnSurface tsos = tsc(measurement.forwardPredictedState(), measurement.backwardPredictedState());
-        lp = tsos.localPosition();
+         // check that we are in the pixel
+         if( subdetid == PixelSubdetector::PixelBarrel ){ isBpixtrack = true;}
+         if( subdetid == PixelSubdetector::PixelEndcap ){ isFpixtrack = true;}
       }
 
-      MeasurementPoint mp = topol.measurementPosition(lp);
-      int row = (int) mp.x();
-      int col = (int) mp.y();
+      if( !isBpixtrack && !isFpixtrack ){ continue;}
+
+      // then, look at each hit
+      for( auto& measurement : trajectory_ref->measurements() ){
+         if( !measurement.updatedState().isValid() ){ continue;}
+         auto hit = measurement.recHit();
+
+         DetId id          = hit->geographicalId();
+         uint32_t subdetid = ( id.subdetId() );
+         if(   subdetid != PixelSubdetector::PixelBarrel
+               && subdetid != PixelSubdetector::PixelEndcap ){ continue;}
+
+         bool isHitValid   = hit->getType() == TrackingRecHit::valid;
+         bool isHitMissing = hit->getType() == TrackingRecHit::missing;
+
+         const SiPixelRecHit* pixhit         = dynamic_cast<const SiPixelRecHit*>( hit->hit() );
+         const PixelGeomDetUnit* geomdetunit = dynamic_cast<const PixelGeomDetUnit*>( tracker->idToDet( id ) );
+         const PixelTopology& topol          = geomdetunit->specificTopology();
+         LocalPoint lp;
+         if( pixhit ){
+            lp = pixhit->localPosition();
+         } else {
+            TrajectoryStateCombiner tsc;
+            TrajectoryStateOnSurface tsos = tsc( measurement.forwardPredictedState(), measurement.backwardPredictedState() );
+            lp = tsos.localPosition();
+         }
+
+         MeasurementPoint mp = topol.measurementPosition( lp );
+         int row             = (int)mp.x();
+         int col             = (int)mp.y();
 
 
-      if (isHitValid)   {
-        histo[VALID].fill(id, &iEvent, col, row);
-        histo[EFFICIENCY].fill(1, id, &iEvent, col, row);
+         if( isHitValid ){
+            histo[VALID].fill( id, &iEvent, col, row );
+            histo[EFFICIENCY].fill( 1, id, &iEvent, col, row );
+         }
+         if( isHitMissing ){
+            histo[MISSING].fill( id, &iEvent, col, row );
+            histo[EFFICIENCY].fill( 0, id, &iEvent, col, row );
+         }
       }
-      if (isHitMissing) {
-        histo[MISSING].fill(id, &iEvent, col, row);
-        histo[EFFICIENCY].fill(0, id, &iEvent, col, row);
-      }
-    }
-  }
-histo[VALID  ].executePerEventHarvesting(&iEvent);
-histo[MISSING].executePerEventHarvesting(&iEvent);
+   }
+
+   histo[VALID  ].executePerEventHarvesting( &iEvent );
+   histo[MISSING].executePerEventHarvesting( &iEvent );
 }
 
-DEFINE_FWK_MODULE(SiPixelPhase1TrackEfficiency);
-
+DEFINE_FWK_MODULE( SiPixelPhase1TrackEfficiency );
