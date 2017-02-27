@@ -37,7 +37,6 @@ void SiPixelPhase1TrackClusters::analyze(const edm::Event& iEvent, const edm::Ev
   assert(tracker.isValid());
 
   //get the map
-<<<<<<< HEAD
   edm::Handle<reco::TrackCollection> tracks;
   iEvent.getByToken( tracksToken_, tracks);
 
@@ -45,17 +44,6 @@ void SiPixelPhase1TrackClusters::analyze(const edm::Event& iEvent, const edm::Ev
   edm::Handle< edmNew::DetSetVector<SiPixelCluster> >  clusterColl;
   iEvent.getByToken( clustersToken_, clusterColl );
 
-=======
-  edm::Handle<TrajTrackAssociationCollection> ttac;
-  iEvent.getByToken( trackAssociationToken_, ttac);
-
-  // get clusters
-  edm::Handle< edmNew::DetSetVector<SiPixelCluster> >  clusterColl;
-  iEvent.getByToken( clustersToken_, clusterColl );
-
-  TrajectoryStateCombiner tsoscomb;
-
->>>>>>> enochnotsocool/phase1pixeldqm-filterupdate
   // we need to store some per-cluster data. Instead of a map, we use a vector,
   // exploiting the fact that all custers live in the DetSetVector and we can
   // use the same indices to refer to them.

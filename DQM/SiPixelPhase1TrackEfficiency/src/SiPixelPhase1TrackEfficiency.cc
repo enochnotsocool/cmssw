@@ -27,7 +27,6 @@
 SiPixelPhase1TrackEfficiency::SiPixelPhase1TrackEfficiency( const edm::ParameterSet& iConfig ) :
    SiPixelPhase1Base( iConfig )
 {
-   trackAssociationToken_ = consumes<TrajTrackAssociationCollection>( iConfig.getParameter<edm::InputTag>( "trajectories" ) );
    vtxToken_              = consumes<reco::VertexCollection>( iConfig.getParameter<edm::InputTag>( "primaryvertices" ) );
 }
 
