@@ -1,7 +1,7 @@
-#ifndef SiPixelPhase1RecHits_h 
-#define SiPixelPhase1RecHits_h 
+#ifndef SiPixelPhase1RecHits_h
+#define SiPixelPhase1RecHits_h
 // -*- C++ -*-
-// 
+//
 // Package:     SiPixelPhase1RecHits
 // Class  :     SiPixelPhase1RecHits
 //

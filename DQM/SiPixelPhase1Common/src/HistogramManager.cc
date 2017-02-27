@@ -6,7 +6,7 @@
 #include "DQM/SiPixelPhase1Common/interface/HistogramManager.h"
 
 #include <sstream>
-#include <boost/algorithm/string.hpp>    
+#include <boost/algorithm/string.hpp>
 
 // Geometry stuff
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -53,12 +53,12 @@ void HistogramManager::addSpec(SummationSpecification spec) {
   fastpath.push_back(nullptr);
 }
 
-// This is the hottest function in the HistogramManager. Make sure it does not 
+// This is the hottest function in the HistogramManager. Make sure it does not
 // allocate memory or other expensive things.
 // Currently the GeometryInterface::extract (some virtual calls) and the map
 // lookups should be the most expensive things, but they should only happen if
 // the module changed from the last call; an optimization that fails when row/
-// col are used. 
+// col are used.
 // fillInternal (called from here) does more lookups on the geometry, if EXTEND
 // is used; we do not attempt the optimization there since in most cases row/
 // col are involved.
@@ -68,12 +68,12 @@ void HistogramManager::fill(double x, double y, DetId sourceModule,
 
   // We only need to check the module here, since the fastpath is only used to
   // determine which plot is filled (not which bin inside) and fillInternal
-  // re-extracts whatever it needs for the axis. 
+  // re-extracts whatever it needs for the axis.
   // Since do not support booking based on ROC or time, the plot can only depend
   // on the module.
   // The sourceEvent check is not really effective (pointer is always the same)
   // but needed for initialisation.
-  // NOTE that this might change if we want to support per-ROC booking 
+  // NOTE that this might change if we want to support per-ROC booking
   // NOTE that we could even cache the bin to fill if iq and spec are identical,
   // also across HistogramManagers.
   bool cached = false;
@@ -81,7 +81,7 @@ void HistogramManager::fill(double x, double y, DetId sourceModule,
     && sourceEvent == this->iq.sourceEvent) {
     cached = true;
   }
-  iq = GeometryInterface::InterestingQuantities{sourceEvent, sourceModule, 
+  iq = GeometryInterface::InterestingQuantities{sourceEvent, sourceModule,
                                                 int16_t(col), int16_t(row)};
   for (unsigned int i = 0; i < specs.size(); i++) {
     auto& s = specs[i];
@@ -102,7 +102,7 @@ void HistogramManager::fill(double x, double y, DetId sourceModule,
         fastpath[i] = &(histo->second);
       }
     }
-    // A fastpath of nullptr means there is no ME for this iq, which can be 
+    // A fastpath of nullptr means there is no ME for this iq, which can be
     // a valid cached result.
     if (fastpath[i]) {
       if (s.steps[0].type == SummationStep::COUNT) {
@@ -135,7 +135,7 @@ void HistogramManager::fillInternal(double x, double y, int n_parameters,
   for (auto it = first; it != last; ++it) {
     if (it->stage != SummationStep::STAGE1) break;
     // The specification builder precomputes where x and y go, this loop will
-    // always do 3 iterations to set x, y, z. The builder does not know how 
+    // always do 3 iterations to set x, y, z. The builder does not know how
     // many parameters we have, so we have to check that and count the total.
     switch (it->type) {
       case SummationStep::USE_X:
@@ -219,7 +219,7 @@ void HistogramManager::executePerEventHarvesting(const edm::Event* sourceEvent) 
   }
 }
 
-std::pair<std::string, std::string> 
+std::pair<std::string, std::string>
 HistogramManager::makePathName(SummationSpecification const& s,
     GeometryInterface::Values const& significantvalues,
     SummationStep const* upto) {
@@ -308,7 +308,7 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
       bookCounters = true;
     }
 
-    auto laststep = std::find_if(s.steps.begin(), s.steps.end(), 
+    auto laststep = std::find_if(s.steps.begin(), s.steps.end(),
       [](SummationStep const& step) { return step.stage == SummationStep::STAGE2; });
 
     GeometryInterface::Values significantvalues;
@@ -335,10 +335,10 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
       auto histo = toBeBooked.find(significantvalues);
       if (histo == toBeBooked.end()) {
         // create new histo
-        MEInfo& mei = toBeBooked[significantvalues]; 
+        MEInfo& mei = toBeBooked[significantvalues];
         mei.title = this->title;
-        if (bookCounters) 
-          mei.title = "Number of " + mei.title + " per Event and " 
+        if (bookCounters)
+          mei.title = "Number of " + mei.title + " per Event and "
             + geometryInterface.pretty(*(s.steps[0].columns.end()-1));
         std::string xlabel = bookCounters ? "#" + this->xlabel : this->xlabel;
 
@@ -349,7 +349,7 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
                 mei.to##label = from##label; \
                 mei.range_##to##_min = this->range_##from##_min; \
                 mei.range_##to##_max = this->range_##from##_max; \
-                mei.range_##to##_nbins = this->range_##from##_nbins 
+                mei.range_##to##_nbins = this->range_##from##_nbins
         for (auto it = firststep+1; it != laststep; ++it) {
           switch (it->type) {
             case SummationStep::USE_X:
@@ -397,9 +397,9 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
         mei.dimensions = tot_parameters;
         if (mei.do_profile) mei.title = "Profile of " + mei.title;
         if (mei.zlabel.size() > 0) mei.title = mei.title + " (Z: " + mei.zlabel + ")";
-      } 
+      }
       // only update range
-      MEInfo& mei = toBeBooked[significantvalues]; 
+      MEInfo& mei = toBeBooked[significantvalues];
       double val;
 
       for (auto it = firststep+1; it != laststep; ++it) {
@@ -421,7 +421,7 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
         }
       }
     }
-    
+
     // Now do the actual booking.
     for (auto& e : toBeBooked) {
       AbstractHistogram& h = t[e.first];
@@ -472,7 +472,7 @@ void HistogramManager::book(DQMStore::IBooker& iBooker,
                        mei.range_y_nbins, mei.range_y_min, mei.range_y_max,
                        0.0, 0.0); // Z range is ignored if min==max
       } else {
-        edm::LogError("HistogramManager") << "Illegal Histogram!\n" 
+        edm::LogError("HistogramManager") << "Illegal Histogram!\n"
           << "name " << name.second << "\n"
           << "dim " << mei.dimensions << " profile " << mei.do_profile << "\n";
         assert(!"Illegal Histogram kind.");
@@ -507,7 +507,7 @@ void HistogramManager::loadFromDQMStore(SummationSpecification& s, Table& t,
   GeometryInterface::Values significantvalues;
   auto firststep = s.steps.begin();
   if (firststep->type != SummationStep::GROUPBY) ++firststep;
-  auto laststep = std::find_if(s.steps.begin(), s.steps.end(), 
+  auto laststep = std::find_if(s.steps.begin(), s.steps.end(),
     [](SummationStep const& step) { return step.stage == SummationStep::STAGE2; });
 
   for (auto iq : geometryInterface.allModules()) {
@@ -541,7 +541,7 @@ void HistogramManager::executeGroupBy(SummationStep const& step, Table& t,
   GeometryInterface::Values significantvalues;
   for (auto& e : t) {
     TH1* th1 = e.second.th1;
-    geometryInterface.extractColumns(step.columns, e.second.iq_sample, 
+    geometryInterface.extractColumns(step.columns, e.second.iq_sample,
                                      significantvalues);
     AbstractHistogram& new_histo = out[significantvalues];
     if (!new_histo.me) {
@@ -561,7 +561,7 @@ void HistogramManager::executeGroupBy(SummationStep const& step, Table& t,
   t.swap(out);
 }
 
-void HistogramManager::executeExtend(SummationStep const& step, Table& t, 
+void HistogramManager::executeExtend(SummationStep const& step, Table& t,
     std::string const& reduce_type, DQMStore::IBooker& iBooker, SummationSpecification const& s) {
   // For the moment only X.
   // first pass determines the range.
@@ -576,7 +576,7 @@ void HistogramManager::executeExtend(SummationStep const& step, Table& t,
   GeometryInterface::Values significantvalues;
 
   for (auto& e : t) {
-    geometryInterface.extractColumns(step.columns, e.second.iq_sample, 
+    geometryInterface.extractColumns(step.columns, e.second.iq_sample,
                                      significantvalues);
     int& n = nbins[significantvalues];
     assert(e.second.th1 || !"invalid histogram");
@@ -589,7 +589,7 @@ void HistogramManager::executeExtend(SummationStep const& step, Table& t,
 
   Table out;
   for (auto& e : t) {
-    geometryInterface.extractColumns(step.columns, e.second.iq_sample, 
+    geometryInterface.extractColumns(step.columns, e.second.iq_sample,
                                      significantvalues);
     TH1* th1 = e.second.th1;
     assert(th1);
@@ -602,14 +602,15 @@ void HistogramManager::executeExtend(SummationStep const& step, Table& t,
       auto separator = separators[significantvalues];
 
       auto name = makePathName(s, significantvalues, &step);
+      auto yname = reduce_type != "" ? th1->GetYaxis()->GetTitle() : th1->GetXaxis()->GetTitle();
+      auto xname = reduce_type != "" ? reduce_type + " of " + th1->GetXaxis()->GetTitle() : th1->GetYaxis()->GetTitle();
       auto title = std::string("") + th1->GetTitle() + " per " + colname + ";" +
-                 colname + separator + 
-                 (reduce_type != "" ? th1->GetYaxis()->GetTitle() : th1->GetXaxis()->GetTitle()) + ";" +
-                 (reduce_type != "" ? reduce_type + " of " + th1->GetXaxis()->GetTitle() : th1->GetYaxis()->GetTitle());
+                 colname + separator +
+                 yname + ";" + xname;
       iBooker.setCurrentFolder(name.first);
 
       if (th1->GetDimension() == 1) {
-        new_histo.me = iBooker.book1D(name.second, title, 
+        new_histo.me = iBooker.book1D(name.second, title,
               nbins[significantvalues], 0.5, nbins[significantvalues] + 0.5);
       } else {
         assert(!"2D extend not implemented in harvesting.");
@@ -633,7 +634,7 @@ void HistogramManager::executeExtend(SummationStep const& step, Table& t,
         new_histo.th1->SetBinError(new_histo.count, th1->GetMeanError());
         new_histo.count += 1;
       } else {
-        assert(!"Reduction type not supported"); 
+        assert(!"Reduction type not supported");
       }
     } else {
       assert(!"2D extend not implemented in harvesting.");

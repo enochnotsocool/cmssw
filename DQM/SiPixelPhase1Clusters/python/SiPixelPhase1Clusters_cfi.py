@@ -1,12 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 from DQM.SiPixelPhase1Common.HistogramManager_cfi import *
+from DQM.SiPixelPhase1Common.TriggerEventFlag_cfi import *
 
 SiPixelPhase1ClustersCharge = DefaultHistoDigiCluster.clone(
   name = "charge",
   title = "Cluster Charge",
   range_min = 0, range_max = 200e3, range_nbins = 200,
   xlabel = "Charge (electrons)",
-  
+
   specs = VPSet(
     #StandardSpecification2DProfile,
     StandardSpecificationPixelmapProfile,
@@ -71,6 +72,11 @@ SiPixelPhase1ClustersNClusters = DefaultHistoDigiCluster.clone(
     StandardSpecificationTrend_Num,
     StandardSpecifications1D_Num,
   )
+)
+
+SiPixelPhase1ClustersNClustersFiltered = SiPixelPhase1ClustersNClusters.clone(
+  name = "filtered_clusters",
+  title = "Filter Clusters",
 )
 
 
@@ -152,6 +158,7 @@ SiPixelPhase1ClustersPositionYZ = DefaultHistoDigiCluster.clone(
   )
 )
 
+
 SiPixelPhase1ClustersSizeVsEta = DefaultHistoDigiCluster.clone(
   name = "sizeyvseta",
   title = "Cluster Size along Beamline vs. Cluster position #eta",
@@ -208,6 +215,7 @@ SiPixelPhase1ClustersConf = cms.VPSet(
   SiPixelPhase1ClustersSizeX,
   SiPixelPhase1ClustersSizeY,
   SiPixelPhase1ClustersNClusters,
+  SiPixelPhase1ClustersNClustersFiltered,
   SiPixelPhase1ClustersNClustersInclusive,
   SiPixelPhase1ClustersEventrate,
   SiPixelPhase1ClustersPositionB,
@@ -219,11 +227,16 @@ SiPixelPhase1ClustersConf = cms.VPSet(
   SiPixelPhase1ClustersReadoutNClusters
 )
 
+SiPixelPhase1Clusters_Trigger = cms.VPSet(
+    genericTriggerEventFlag4L1bd,
+    genericTriggerEventFlag4HLTdb
+)
 
 SiPixelPhase1ClustersAnalyzer = cms.EDAnalyzer("SiPixelPhase1Clusters",
         src = cms.InputTag("siPixelClusters"),
         histograms = SiPixelPhase1ClustersConf,
-        geometry = SiPixelPhase1Geometry
+        geometry = SiPixelPhase1Geometry,
+        triggerflags = SiPixelPhase1Clusters_Trigger,
 )
 
 SiPixelPhase1ClustersHarvester = cms.EDAnalyzer("SiPixelPhase1Harvester",

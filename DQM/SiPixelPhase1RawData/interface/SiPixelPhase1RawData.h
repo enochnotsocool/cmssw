@@ -1,7 +1,7 @@
-#ifndef SiPixelPhase1RawData_h 
-#define SiPixelPhase1RawData_h 
+#ifndef SiPixelPhase1RawData_h
+#define SiPixelPhase1RawData_h
 // -*- C++ -*-
-// 
+//
 // Package:     SiPixelPhase1RawData
 // Class  :     SiPixelPhase1RawData
 //

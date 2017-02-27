@@ -1,7 +1,7 @@
-#ifndef SiPixelPhase1TrackResiduals_h 
-#define SiPixelPhase1TrackResiduals_h 
+#ifndef SiPixelPhase1TrackResiduals_h
+#define SiPixelPhase1TrackResiduals_h
 // -*- C++ -*-
-// 
+//
 // Package:     SiPixelPhase1TrackResiduals
 // Class  :     SiPixelPhase1TrackResiduals
 //

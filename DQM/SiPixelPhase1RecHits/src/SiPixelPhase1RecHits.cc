@@ -19,7 +19,7 @@
 #include "Geometry/TrackerGeometryBuilder/interface/PixelGeomDetUnit.h"
 
 SiPixelPhase1RecHits::SiPixelPhase1RecHits(const edm::ParameterSet& iConfig) :
-  SiPixelPhase1Base(iConfig) 
+  SiPixelPhase1Base(iConfig)
 {
   srcToken_ = consumes<SiPixelRecHitCollection>(iConfig.getParameter<edm::InputTag>("src"));
 }
@@ -55,7 +55,7 @@ void SiPixelPhase1RecHits::analyze(const edm::Event& iEvent, const edm::EventSet
       
       float rechit_x = lp.x();
       float rechit_y = lp.y();
-      
+
       LocalError lerr = rechit.localPositionError();
       float lerr_x = sqrt(lerr.xx());
       float lerr_y = sqrt(lerr.yy());
@@ -80,4 +80,3 @@ void SiPixelPhase1RecHits::analyze(const edm::Event& iEvent, const edm::EventSet
 }
 
 DEFINE_FWK_MODULE(SiPixelPhase1RecHits);
-
