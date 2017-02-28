@@ -45,10 +45,6 @@ void SiPixelPhase1TrackEfficiency::analyze(const edm::Event& iEvent, const edm::
   histo[VERTICES].fill(vertices->size(),DetId(0),&iEvent);
   if (vertices->size() == 0) return;
 
-  // Filling in vertex Chi2 histogram
-  for( const auto& vertex : *vertices ){
-    histo[CHISQ].fill( vertex.chi2(), DetId(0), &iEvent );
-  }
   // should be used for weird cuts
   //const auto primaryVertex = vertices->at(0);
 

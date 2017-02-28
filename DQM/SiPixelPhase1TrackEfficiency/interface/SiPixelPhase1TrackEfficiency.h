@@ -18,8 +18,7 @@ class SiPixelPhase1TrackEfficiency : public SiPixelPhase1Base {
     VALID,
     MISSING,
     EFFICIENCY,
-    VERTICES,
-    CHISQ
+    VERTICES
   };
 
   public:
