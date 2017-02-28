@@ -25,9 +25,10 @@
 #include <iostream>
 
 SiPixelPhase1TrackEfficiency::SiPixelPhase1TrackEfficiency( const edm::ParameterSet& iConfig ) :
-   SiPixelPhase1Base( iConfig )
+  SiPixelPhase1Base( iConfig )
 {
-   vtxToken_              = consumes<reco::VertexCollection>( iConfig.getParameter<edm::InputTag>( "primaryvertices" ) );
+  tracksToken_ = consumes<reco::TrackCollection>(iConfig.getParameter<edm::InputTag>("tracks"));
+  vtxToken_    = consumes<reco::VertexCollection>( iConfig.getParameter<edm::InputTag>( "primaryvertices" ) );
 }
 
 void SiPixelPhase1TrackEfficiency::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
